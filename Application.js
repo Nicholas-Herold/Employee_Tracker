@@ -1,7 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const e = require('express');
-
+// Connetion
 const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
@@ -11,6 +10,8 @@ const connection = mysql.createConnection({
 });
 
 
+
+// Starting app
 const RunAPP = () => {
     inquirer.prompt({
       name: 'action',
@@ -20,51 +21,50 @@ const RunAPP = () => {
         'Employees',
         'Roles',
         'Department',
+        'View All',
         'Exit'
       ]    
     })
     .then((answer)=>{
       switch(answer.action){
         case 'Employees':
-          console.log('hello');
+          
           employeequest();
         break;
         case 'Roles':
-          console.log('2')
+          
           rolequest();
           break;
         case 'Department':
-          console.log('kldsjaf');
           deptquest();
           break;
+        case 'View All':
+          viewall()
         case 'Exit':
           connection.end();
         default:
           console.log('Invalid Action');
+          RunAPP();
       }
     })
 
 }
 
 
-connection.connect((err) => {
-  if (err) throw err;
-  // run the start function after the connection is made to prompt the user
-  RunAPP();
-});
 
 
-
+// Department Options
 const deptquest = () => {
   inquirer.prompt({
     name: 'action',
     type: 'list',
-    message: 'What would you like to do?',
+    message: 'Department Menu?',
     choices: [
       'Add',
       'Remove',
       'Edit',
-      'View'
+      'View',
+      'Back'
     ]    
   })
   .then((answer)=>{
@@ -75,90 +75,96 @@ const deptquest = () => {
       case 'Remove':
         getdepartments(1);
         break;
+      case 'View':
+      getdepartments(3)
+      case 'Back':
+        RunAPP();
+      default:
+        console.log('Invalid Action')
+        deptquest();
+    }
+  })
+
+}
+
+// Role Menu
+const rolequest = () => {
+  inquirer.prompt({
+    name: 'action',
+    type: 'list',
+    message: 'Role Menu?',
+    choices: [
+      'Add',
+      'Remove',
+      'Edit',
+      'View',
+      'Back'
+    ]    
+  })
+  .then((answer)=>{
+    switch(answer.action){
+      case 'Add':
+        
+        getdepartments(2);
+      break;
+      case 'Remove':
+        
+        break;
       case 'Edit':
         
         break;
 
       case 'View':
-        console.log ('View')
+        
+        getroles(3)
+      case 'Back':
+          RunAPP();
       default:
         console.log('Invalid Action')
+        rolequest();
     }
   })
 
 }
 
-
-const rolequest = () => {
-  inquirer.prompt({
-    name: 'action',
-    type: 'list',
-    message: 'What would you like to do?',
-    choices: [
-      'Add',
-      'Remove',
-      'Edit',
-      'View'
-    ]    
-  })
-  .then((answer)=>{
-    switch(answer.action){
-      case 'Add':
-        console.log('hello')
-        getdepartments(2);
-      break;
-      case 'Remove':
-        console.log('2')
-        break;
-      case 'Edit':
-        console.log('kldsjaf')
-        break;
-
-      case 'View':
-        console.log ('View')
-      default:
-        console.log('Invalid Action')
-    }
-  })
-
-}
-
+// Employee Menu
 const employeequest = () => {
   inquirer.prompt({
     name: 'action',
     type: 'list',
-    message: 'What would you like to do?',
+    message: 'Employee Menu',
     choices: [
       'Add',
       'Remove',
       'Edit',
-      'View'
+      'View',
+      'Back'
     ]    
   })
   .then((answer)=>{
     switch(answer.action){
       case 'Add':
-        console.log('hello')
         getroles(1)
       break;
       case 'Remove':
-        getEmloyees(1)
-        console.log('2')
+        getEmloyees(1);
         break;
       case 'Edit':
-        console.log('kldsjaf')
-        getEmloyees(2)
+        getEmloyees(2);
         break;
-
       case 'View':
-        console.log ('View')
+        getEmloyees(3);
+      case 'Back':
+          RunAPP();
       default:
         console.log('Invalid Action')
+        employeequest();
     }
   })
 
 }
 
+// Get all Department info for other functions
 const getdepartments  = (call) =>{
   connection.query('SELECT * FROM department', (err, res) => {
     if (err) throw err;
@@ -176,6 +182,9 @@ const getdepartments  = (call) =>{
           newdepo.push(id+'.'+name)
           });
         addRole(newdepo);
+        case 3: 
+        console.table(depo);
+        deptquest();
     
       default:
         break;
@@ -183,23 +192,25 @@ const getdepartments  = (call) =>{
   });
 };
 
+
+// get all Rolls for other fuctions
 const getroles  = (call,names) =>{
   connection.query('SELECT * FROM roles', (err, res) => {
     if (err) throw err;
     let role = res
-    let newrole=[]  
+    let newrole=[] 
+    role.forEach(({id,title})=> {
+      newrole.push(id+'.'+title)
+      }); 
     switch (call) {
       case 1:
-        role.forEach(({id,title})=> {
-          newrole.push(id+'.'+title)
-          });
       addEmployee(newrole);
         break;
       case 2:
-        role.forEach(({id,name})=> {
-          newrole.push(id+'.'+name)
-          });
         updateEmployee(names,newrole);
+      case 3:
+        console.table(newrole)
+        rolequest();
     
       default:
         break;
@@ -207,11 +218,12 @@ const getroles  = (call,names) =>{
   });
 };
 
+// get all employees for other functions
 const getEmloyees  = (call) =>{
   connection.query('SELECT * FROM employee', (err, res) => {
     if (err) throw err;
     let employee = res
-    console.log(employee)
+  
     let newemployee=[]  
     switch (call) {
       case 1:
@@ -225,6 +237,9 @@ const getEmloyees  = (call) =>{
           newemployee.push(id+'.'+first_name+' '+last_name)
           });
       getroles(2,newemployee);
+      case 3:
+        console.table(employee)
+        employeequest();
     
       default:
         break;
@@ -232,6 +247,7 @@ const getEmloyees  = (call) =>{
   });
 };
 
+// Add a department
 const addDepartment = () =>{
 inquirer.prompt({
   name: 'depo',
@@ -256,10 +272,10 @@ inquirer.prompt({
   });
   
 };
-
+// Remove department
 const removeDepartment = (depos) =>{
  
-console.log(depos)
+
   inquirer.prompt({
     name: 'Department',
     type: 'list',
@@ -267,7 +283,6 @@ console.log(depos)
     choices: [...depos]
   })
   .then((answer) => {
-    console.log(answer)
     let dep_id = answer.Department.split('.')
     
     connection.query(
@@ -330,7 +345,7 @@ const addEmployee = (roles) =>{
         (err) => {
           if (err) throw err;
           console.log('Your employee was created successfully!');
-          RunAPP();
+          employeequest();
         }
       );
     });
@@ -338,11 +353,27 @@ const addEmployee = (roles) =>{
   };
 
   const updateEmployee = (names,roles)=>{
-    inquirer.prompt({
+    inquirer.prompt([{
       name: 'employee',
       type: 'list',
       message: 'Please select employee.',
       choices: [...names]
+
+    },
+  {
+    name: 'role',
+    type: 'list',
+    message: 'Please select employee.',
+    choices: [...roles] 
+  }])
+    .then((answer)=>{
+      let emp_id = answer.employee.split('.');
+      let role_id = answer.employee.split('.');
+
+      let updatsql = `UPDATE employee SET ? Where id= ?`
+
+      connection.query(updatsql,[role_id[0],emp_id[0]])
+
 
     })
   }
@@ -350,7 +381,7 @@ const addEmployee = (roles) =>{
 
 
   const addRole = (depart) =>{
-    console.log(depart)
+   
     inquirer.prompt([{
       name: 'role',
       type: 'input',
@@ -383,14 +414,20 @@ const addEmployee = (roles) =>{
           (err) => {
             if (err) throw err;
             console.log('Your role was created successfully!');
-            // re-prompt the user for if they want to bid or post
-            RunAPP();
+            rolequest();
           }
         );
       });
       
     };
 
+
+    // Start Connection and run App
+    connection.connect((err) => {
+      if (err) throw err;
+      RunAPP();
+    });
+    
 
 
   // 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name	FROM employee INNER JOIN role ON (employee.role_id = role.id AND employee.manager_id) INNER JOIN department on (department_id = department.id);'

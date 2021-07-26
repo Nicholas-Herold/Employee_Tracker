@@ -5,7 +5,6 @@
   "main": "Application.js",
   "dependencies": {
     "console-table-printer": "^2.9.0",
-    "express": "^4.17.1",
     "inquirer": "^8.1.2",
     "mysql": "^2.18.1"
   },
