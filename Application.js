@@ -503,10 +503,11 @@ const addEmployee = (roles) =>{
 
     const viewAll = ()=>{
       console.log ('view everything')
-      let sql = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name	FROM employee INNER JOIN role ON (employee.role_id = role.id AND employee.manager_id) INNER JOIN department on (department_id = department.id);'
+      let sql = 'SELECT employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department.name	FROM employee INNER JOIN roles ON (employee.role_id = roles.id AND employee.manager_id) INNER JOIN department on (department_id = department.id)';
     
-      connection.query(sql,(err,res) => {
-        console.table(res)
+      connection.query(sql,[],(err,res) => {
+        console.table(res);
+        
         RunAPP();
       })
     };
@@ -518,7 +519,3 @@ const addEmployee = (roles) =>{
       RunAPP();
     });
     
-
-
-  // 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name	FROM employee INNER JOIN role ON (employee.role_id = role.id AND employee.manager_id) INNER JOIN department on (department_id = department.id);'
-
