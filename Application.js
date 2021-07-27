@@ -17,7 +17,7 @@ const RunAPP = () => {
     inquirer.prompt({
       name: 'action',
       type: 'list',
-      message: 'What would you like to do?',
+      message: 'What would you like to view?',
       choices: [
         'Employees',
         'Roles',
@@ -398,7 +398,7 @@ const addEmployee = (roles) =>{
         (err) => {
           if (err) throw err;
           console.log('Your role was created successfully!');
-          rolequest();
+          employeequest();
         }
       );
 
@@ -424,7 +424,7 @@ const addEmployee = (roles) =>{
           if (err) throw err;
           console.log('Your employee was deleted successfully!');
           // re-prompt the user for if they want to bid or post
-          RunAPP();
+          employeequest();
         }
       );
     });
@@ -494,7 +494,7 @@ const addEmployee = (roles) =>{
             if (err) throw err;
             console.log('Your role was deleted successfully!');
             // re-prompt the user for if they want to bid or post
-            RunAPP();
+            rolequest();
           }
         );
       });
