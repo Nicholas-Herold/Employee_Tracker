@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+
 // Connetion
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -39,12 +40,15 @@ const RunAPP = () => {
           deptquest();
           break;
         case 'View All':
-          viewall()
+          viewAll();
+         break;
         case 'Exit':
           connection.end();
+          break;
         default:
           console.log('Invalid Action');
           RunAPP();
+          break;
       }
     })
 
@@ -62,7 +66,6 @@ const deptquest = () => {
     choices: [
       'Add',
       'Remove',
-      'Edit',
       'View',
       'Back'
     ]    
@@ -71,17 +74,20 @@ const deptquest = () => {
     switch(answer.action){
       case 'Add':
         addDepartment();
-      break;
+        break;
       case 'Remove':
         getdepartments(1);
         break;
       case 'View':
-      getdepartments(3)
+        getdepartments(3)
+        break;
       case 'Back':
         RunAPP();
+        break;
       default:
         console.log('Invalid Action')
         deptquest();
+        break;
     }
   })
 
@@ -96,7 +102,6 @@ const rolequest = () => {
     choices: [
       'Add',
       'Remove',
-      'Edit',
       'View',
       'Back'
     ]    
@@ -104,24 +109,21 @@ const rolequest = () => {
   .then((answer)=>{
     switch(answer.action){
       case 'Add':
-        
         getdepartments(2);
-      break;
+        break;
       case 'Remove':
-        
+        getroles(4);
         break;
-      case 'Edit':
-        
-        break;
-
       case 'View':
-        
         getroles(3)
+        break;
       case 'Back':
           RunAPP();
+          break;
       default:
         console.log('Invalid Action')
         rolequest();
+        break;
     }
   })
 
@@ -154,11 +156,14 @@ const employeequest = () => {
         break;
       case 'View':
         getEmloyees(3);
+        break;
       case 'Back':
           RunAPP();
+          break;
       default:
         console.log('Invalid Action')
         employeequest();
+        break;
     }
   })
 
@@ -182,11 +187,14 @@ const getdepartments  = (call) =>{
           newdepo.push(id+'.'+name)
           });
         addRole(newdepo);
+        break;
         case 3: 
         console.table(depo);
         deptquest();
+        break;
     
       default:
+        deptquest()
         break;
     }
   });
@@ -208,11 +216,17 @@ const getroles  = (call,names) =>{
         break;
       case 2:
         updateEmployee(names,newrole);
+        break;
       case 3:
-        console.table(newrole)
+        console.table(newrole);
         rolequest();
+        break;
+      case 4:
+        removeRole(newrole);
+        break;
     
       default:
+        rolequest()
         break;
     }
   });
@@ -227,21 +241,24 @@ const getEmloyees  = (call) =>{
     let newemployee=[]  
     switch (call) {
       case 1:
-      //   employee.forEach(({id,first_name,last_name})=> {
-      //     newemployee.push(id+'.'+first_name+last_name)
-      //     });
-      // addEmployee(newemployee);
+        employee.forEach(({id,first_name,last_name})=> {
+          newemployee.push(id+'.'+first_name+last_name)
+          });
+      removeEmployee(newemployee);
         break;
         case 2:
         employee.forEach(({id,first_name,last_name})=> {
           newemployee.push(id+'.'+first_name+' '+last_name)
           });
       getroles(2,newemployee);
+      break;
       case 3:
-        console.table(employee)
-        employeequest();
+      console.table(employee)
+      employeequest();
+      break;
     
       default:
+        employeequest();
         break;
     }
   });
@@ -266,7 +283,7 @@ inquirer.prompt({
         if (err) throw err;
         console.log('Your department was created successfully!');
         // re-prompt the user for if they want to bid or post
-        RunAPP();
+        deptquest();
       }
     );
   });
@@ -294,7 +311,7 @@ const removeDepartment = (depos) =>{
         if (err) throw err;
         console.log('Your department was deleted successfully!');
         // re-prompt the user for if they want to bid or post
-        RunAPP();
+        deptquest();
       }
     );
   });
@@ -368,14 +385,50 @@ const addEmployee = (roles) =>{
   }])
     .then((answer)=>{
       let emp_id = answer.employee.split('.');
-      let role_id = answer.employee.split('.');
+      let role_id = answer.role.split('.');
 
-      let updatsql = `UPDATE employee SET ? Where id= ?`
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{
+          role_id: role_id[0]
+        },
+        {
+          id: emp_id[0]
+        }],
+        (err) => {
+          if (err) throw err;
+          console.log('Your role was created successfully!');
+          rolequest();
+        }
+      );
 
-      connection.query(updatsql,[role_id[0],emp_id[0]])
+    });
+  };
 
-
+  const removeEmployee = (names) => {
+    inquirer.prompt({
+      name: 'Employee',
+      type: 'list',
+      message: 'Department Name:',
+      choices: [...names]
     })
+    .then((answer) => {
+      let newnames = answer.Employee.split('.')
+      
+      connection.query(
+        'DELETE FROM employee WHERE ?',
+        {
+          id: newnames[0]
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('Your employee was deleted successfully!');
+          // re-prompt the user for if they want to bid or post
+          RunAPP();
+        }
+      );
+    });
+
   }
 
 
@@ -422,6 +475,43 @@ const addEmployee = (roles) =>{
     };
 
 
+    const removeRole = (roles) => {
+      inquirer.prompt({
+        name: 'roles',
+        type: 'list',
+        message: 'Role',
+        choices: [...roles]
+      })
+      .then((answer) => {
+        let newrole = answer.roles.split('.')
+        
+        connection.query(
+          'DELETE FROM roles WHERE ?',
+          {
+            id: newrole[0]
+          },
+          (err) => {
+            if (err) throw err;
+            console.log('Your role was deleted successfully!');
+            // re-prompt the user for if they want to bid or post
+            RunAPP();
+          }
+        );
+      });
+  
+    };
+
+    const viewAll = ()=>{
+      console.log ('view everything')
+      let sql = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name	FROM employee INNER JOIN role ON (employee.role_id = role.id AND employee.manager_id) INNER JOIN department on (department_id = department.id);'
+    
+      connection.query(sql,(err,res) => {
+        console.table(res)
+        RunAPP();
+      })
+    };
+
+
     // Start Connection and run App
     connection.connect((err) => {
       if (err) throw err;
@@ -431,3 +521,4 @@ const addEmployee = (roles) =>{
 
 
   // 'SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, department.name	FROM employee INNER JOIN role ON (employee.role_id = role.id AND employee.manager_id) INNER JOIN department on (department_id = department.id);'
+
